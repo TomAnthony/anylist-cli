@@ -1,0 +1,56 @@
+{
+  "name": "anylist-cli",
+  "version": "0.1.0",
+  "description": "Unofficial CLI for AnyList grocery and shopping lists",
+  "author": "Matt Russell <matthewjosephrussell@gmail.com>",
+  "license": "MIT",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/mjrussell/anylist-cli"
+  },
+  "bugs": {
+    "url": "https://github.com/mjrussell/anylist-cli/issues"
+  },
+  "homepage": "https://github.com/mjrussell/anylist-cli#readme",
+  "keywords": [
+    "anylist",
+    "cli",
+    "grocery",
+    "shopping",
+    "list",
+    "unofficial"
+  ],
+  "type": "module",
+  "exports": {
+    ".": {
+      "import": "./dist/index.js",
+      "types": "./dist/index.d.ts"
+    }
+  },
+  "main": "./dist/index.js",
+  "types": "./dist/index.d.ts",
+  "bin": {
+    "anylist": "./dist/cli.js"
+  },
+  "files": [
+    "dist"
+  ],
+  "engines": {
+    "node": ">=18"
+  },
+  "scripts": {
+    "build": "tsup",
+    "dev": "tsup --watch",
+    "typecheck": "tsc --noEmit",
+    "prepublishOnly": "npm run build"
+  },
+  "dependencies": {
+    "anylist": "^0.8.5",
+    "commander": "^13.0.0"
+  },
+  "devDependencies": {
+    "@types/node": "^22.10.0",
+    "tsup": "^8.3.5",
+    "typescript": "^5.7.0"
+  }
+}
