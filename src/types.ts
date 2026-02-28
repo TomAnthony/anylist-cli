@@ -5,6 +5,7 @@
 export interface AnyListItem {
   name: string;
   quantity: string;
+  details: string;
   checked: boolean;
   identifier: string;
   categoryMatchId: string;
@@ -28,6 +29,7 @@ export interface AnyListClient {
   createItem(options: {
     name: string;
     quantity?: string;
+    details?: string;
     categoryMatchId?: string;
   }): AnyListItem;
 }
@@ -48,6 +50,7 @@ export interface ListInfo {
 export interface ItemInfo {
   name: string;
   quantity: string;
+  details: string;
   checked: boolean;
   identifier: string;
   categoryMatchId: string;

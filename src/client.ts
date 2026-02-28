@@ -81,7 +81,8 @@ export function getItems(list: AnyListList, uncheckedOnly = false): ItemInfo[] {
   return items.map((item: AnyListItem) => ({
     name: item.name,
     quantity: item.quantity || "",
-    checked: Boolean(item.checked), // Normalize null/undefined to false
+    details: item.details || "",
+    checked: Boolean(item.checked),
     identifier: item.identifier,
     categoryMatchId: item.categoryMatchId || "other",
   }));
@@ -114,31 +115,31 @@ export async function addItem(
   list: AnyListList,
   name: string,
   quantity?: string,
-  categoryMatchId?: string
+  categoryMatchId?: string,
+  details?: string
 ): Promise<ItemInfo> {
   // Check if item already exists
   const existing = findItemByName(list, name);
   if (existing) {
-    // Update all properties at once before saving
     let needsSave = false;
 
-    // Uncheck it if it's checked
     if (existing.checked) {
       existing.checked = false;
       needsSave = true;
     }
-    // Update quantity if provided
     if (quantity) {
       existing.quantity = quantity;
       needsSave = true;
     }
-    // Update category if provided
     if (categoryMatchId) {
       existing.categoryMatchId = categoryMatchId;
       needsSave = true;
     }
+    if (details !== undefined) {
+      existing.details = details;
+      needsSave = true;
+    }
 
-    // Save once with all changes
     if (needsSave) {
       await existing.save();
     }
@@ -146,6 +147,7 @@ export async function addItem(
     return {
       name: existing.name,
       quantity: existing.quantity || "",
+      details: existing.details || "",
       checked: existing.checked,
       identifier: existing.identifier,
       categoryMatchId: existing.categoryMatchId || "other",
@@ -153,10 +155,17 @@ export async function addItem(
   }
 
   // Create new item
-  const options: { name: string; quantity?: string; categoryMatchId?: string } =
-    { name };
+  const options: {
+    name: string;
+    quantity?: string;
+    details?: string;
+    categoryMatchId?: string;
+  } = { name };
   if (quantity) {
     options.quantity = quantity;
+  }
+  if (details !== undefined) {
+    options.details = details;
   }
   if (categoryMatchId) {
     options.categoryMatchId = categoryMatchId;
@@ -166,6 +175,7 @@ export async function addItem(
   return {
     name: added.name,
     quantity: added.quantity || "",
+    details: added.details || "",
     checked: added.checked,
     identifier: added.identifier,
     categoryMatchId: added.categoryMatchId || "other",
@@ -187,6 +197,7 @@ export async function checkItem(
   return {
     name: item.name,
     quantity: item.quantity || "",
+    details: item.details || "",
     checked: item.checked,
     identifier: item.identifier,
     categoryMatchId: item.categoryMatchId || "other",
@@ -208,6 +219,30 @@ export async function uncheckItem(
   return {
     name: item.name,
     quantity: item.quantity || "",
+    details: item.details || "",
+    checked: item.checked,
+    identifier: item.identifier,
+    categoryMatchId: item.categoryMatchId || "other",
+  };
+}
+
+/**
+ * Update an item's notes/details
+ */
+export async function updateItemDetails(
+  list: AnyListList,
+  name: string,
+  details: string
+): Promise<ItemInfo | null> {
+  const item = findItemByName(list, name);
+  if (!item) return null;
+
+  item.details = details;
+  await item.save();
+  return {
+    name: item.name,
+    quantity: item.quantity || "",
+    details: item.details || "",
     checked: item.checked,
     identifier: item.identifier,
     categoryMatchId: item.categoryMatchId || "other",

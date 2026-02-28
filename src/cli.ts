@@ -13,6 +13,7 @@ import {
   uncheckItem,
   removeItem,
   clearChecked,
+  updateItemDetails,
 } from "./client.js";
 import {
   loadConfig,
@@ -276,7 +277,10 @@ program
           if (unchecked.length > 0) {
             for (const item of unchecked) {
               const qty = item.quantity ? style.dim(` (${item.quantity})`) : "";
-              console.log(`  • ${item.name}${qty}`);
+              const notes = item.details
+                ? style.dim(` — ${item.details}`)
+                : "";
+              console.log(`  • ${item.name}${qty}${notes}`);
             }
           }
 
@@ -285,7 +289,8 @@ program
             console.log(style.dim("Checked:"));
             for (const item of checked) {
               const qty = item.quantity ? ` (${item.quantity})` : "";
-              console.log(style.dim(`  ✓ ${item.name}${qty}`));
+              const notes = item.details ? ` — ${item.details}` : "";
+              console.log(style.dim(`  ✓ ${item.name}${qty}${notes}`));
             }
           }
         }
@@ -302,6 +307,7 @@ program
   .argument("<list>", "List name")
   .argument("<item>", "Item name")
   .option("--quantity <quantity>", "Item quantity")
+  .option("--notes <notes>", "Item notes")
   .option(
     "--category <category>",
     "Item category (e.g., produce, meat, dairy)"
@@ -311,7 +317,12 @@ program
     async (
       listName: string,
       itemName: string,
-      options: { quantity?: string; category?: string; json?: boolean }
+      options: {
+        quantity?: string;
+        notes?: string;
+        category?: string;
+        json?: boolean;
+      }
     ) => {
       try {
         const client = await getAuthenticatedClient();
@@ -343,7 +354,8 @@ program
           list,
           itemName,
           options.quantity,
-          categoryId
+          categoryId,
+          options.notes
         );
         teardown();
 
@@ -351,7 +363,8 @@ program
           console.log(JSON.stringify(item, null, 2));
         } else {
           const qty = item.quantity ? ` (${item.quantity})` : "";
-          printSuccess(`Added "${item.name}"${qty} to ${list.name}`);
+          const notes = item.details ? ` [${item.details}]` : "";
+          printSuccess(`Added "${item.name}"${qty}${notes} to ${list.name}`);
         }
       } catch (error) {
         printError(error instanceof Error ? error.message : String(error));
@@ -505,6 +518,78 @@ program
       process.exit(ExitCode.Failure);
     }
   });
+
+program
+  .command("note")
+  .description("Get or set notes on an item")
+  .argument("<list>", "List name")
+  .argument("<item>", "Item name")
+  .argument("[notes]", "Notes text (omit to view, use empty string to clear)")
+  .option("--json", "Output as JSON")
+  .action(
+    async (
+      listName: string,
+      itemName: string,
+      notes: string | undefined,
+      options: { json?: boolean }
+    ) => {
+      try {
+        const client = await getAuthenticatedClient();
+        const list = await getListByName(client, listName);
+
+        if (!list) {
+          printError(`List not found: ${listName}`);
+          teardown();
+          process.exit(ExitCode.Failure);
+        }
+
+        if (notes === undefined) {
+          const items = getItems(list);
+          teardown();
+          const match = items.find(
+            (i) => i.name.toLowerCase() === itemName.toLowerCase()
+          );
+          if (!match) {
+            printError(`Item not found: ${itemName}`);
+            process.exit(ExitCode.Failure);
+          }
+          if (options.json) {
+            console.log(
+              JSON.stringify(
+                { name: match.name, details: match.details },
+                null,
+                2
+              )
+            );
+          } else if (match.details) {
+            console.log(`${style.bold(match.name)}: ${match.details}`);
+          } else {
+            console.log(`${style.bold(match.name)}: ${style.dim("(no notes)")}`);
+          }
+          return;
+        }
+
+        const item = await updateItemDetails(list, itemName, notes);
+        teardown();
+
+        if (!item) {
+          printError(`Item not found: ${itemName}`);
+          process.exit(ExitCode.Failure);
+        }
+
+        if (options.json) {
+          console.log(JSON.stringify(item, null, 2));
+        } else if (notes) {
+          printSuccess(`Set notes on "${item.name}": ${notes}`);
+        } else {
+          printSuccess(`Cleared notes on "${item.name}"`);
+        }
+      } catch (error) {
+        printError(error instanceof Error ? error.message : String(error));
+        process.exit(ExitCode.Failure);
+      }
+    }
+  );
 
 // ─────────────────────────────────────────────────────────────────────────────
 // HELP COMMANDS

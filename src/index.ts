@@ -17,6 +17,7 @@ export {
   uncheckItem,
   removeItem,
   clearChecked,
+  updateItemDetails,
 } from "./client.js";
 
 // Re-export types

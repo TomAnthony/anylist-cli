@@ -32,6 +32,9 @@ anylist items "Grocery"
 # Add an item
 anylist add "Grocery" "Milk" --category dairy
 
+# Add an item with notes
+anylist add "Grocery" "Chicken" --notes "Free range" --category meat
+
 # Check off an item
 anylist check "Grocery" "Milk"
 ```
@@ -71,6 +74,12 @@ anylist items "Grocery" --unchecked   # Only unchecked items
 anylist add "Grocery" "Milk"
 anylist add "Grocery" "Milk" --quantity "2"
 anylist add "Grocery" "Chicken" --category meat
+anylist add "Grocery" "Milk" --notes "Get 2%"
+
+# Get or set notes on an item
+anylist note "Grocery" "Milk"                       # View notes
+anylist note "Grocery" "Milk" "Get the organic kind" # Set notes
+anylist note "Grocery" "Milk" ""                     # Clear notes
 
 # Check/uncheck items
 anylist check "Grocery" "Milk"
@@ -140,9 +149,9 @@ fi
 
 ```bash
 # Add ingredients from a recipe
-anylist add "Grocery" "Ground beef" --category meat
+anylist add "Grocery" "Ground beef" --category meat --notes "85% lean"
 anylist add "Grocery" "Onions" --category produce
-anylist add "Grocery" "Tomatoes" --category produce
+anylist add "Grocery" "Tomatoes" --category produce --notes "Roma, 6 count"
 anylist add "Grocery" "Pasta" --category pasta
 ```
 
